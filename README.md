@@ -4,6 +4,8 @@
 
 🔗 **Live app:** https://asthapurohit.github.io/exam-ready/
 
+📝 **Written note:** [NOTE.md](NOTE.md)
+
 A 15-question check (about 8 minutes, drawn from a bank of 45) that tells an A1 German learner whether to book the Goethe or ÖSD exam now, broken down by skill, and the 2–3 things to practise first.
 
 ## The problem
