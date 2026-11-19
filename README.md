@@ -4,7 +4,7 @@
 
 🔗 **Live app:** https://asthapurohit.github.io/exam-ready/
 
-A 15-question check (about 8 minutes) that tells an A1 German learner whether to book the Goethe or ÖSD exam now, broken down by skill, and the 2–3 things to practise first.
+A 15-question check (about 8 minutes, drawn from a bank of 45) that tells an A1 German learner whether to book the Goethe or ÖSD exam now, broken down by skill, and the 2–3 things to practise first.
 
 ## The problem
 Many learners finish A1 and book the exam without knowing if they're ready. Some fail and lose both the exam fee and time on their journey abroad. A false "you're ready" costs a learner far more than a false "not yet", so the app is deliberately cautious.
@@ -28,34 +28,40 @@ All thresholds are in one place: `RULES` in `scoring.js`.
 4. **Every wrong option is a real mistake.** Each wrong option has a `mistake` explaining what it reveals, so the results can say *why* you lost the point.
 5. **Honest about scope.** The check covers vocabulary, grammar and reading only. The app says so, and recommends a full model test for listening and speaking.
 
-| ID | Situation | Topic | Why it's in the check |
-|---|---|---|---|
-| V1 | Paying 3,50 € at a bakery | Numbers & prices | Numbers are in almost every A1 task. -zehn/-zig is the top number mistake. |
-| V2 | "Viertel nach acht" meeting | Telling the time | Time phrases don't translate 1:1 from English. |
-| V3 | Pay the rent by Mittwoch | Days & dates | Deadlines and appointments are the key detail in many tasks. |
-| V4 | Visa interview family photo | Family & people | A core A1 topic and real life for visa applicants. |
-| V5 | Headache on a Sunday | Shops & places | Drogerie vs Apotheke is a classic false friend. |
-| G1 | "Wir ___ in Pune" | Verb endings | Self-introduction opens the speaking exam. |
-| G2 | Thank-you note: "Du ___ nett" | sein & haben | The most-used irregular verb. |
-| G3 | "Ich habe ___ Bruder" | Accusative | The first grammar topic that really trips up A1 learners. |
-| G4 | Weekend plans text | Word order | The most visible error in writing and speaking. |
-| G5 | "Wann stehen Sie auf?" | Separable verbs | Daily-routine verbs are mostly separable. |
-| R1–R2 | Tom's WhatsApp message | Messages, details | Reading Part 1 style. The options differ in one detail. |
-| R3 | Doctor's opening hours | Signs | Abbreviations (Di, Do) and times. |
-| R4 | Room ad | Short ads | Price per month, m², adjectives. |
-| R5 | Station notice | nicht … sondern | The first number you see is the wrong answer. |
+### A question bank, so retakes are real re-tests
+The app tells learners who aren't ready to "practise 2–3 weeks, then retake the check". If a retake showed the same 15 questions, the second score would partly measure memory, not German, and could give a false "Ready". So each of the 15 slots has **3 versions** (45 questions in total). Each version tests the same topic in a different real situation, with the same rules: every wrong option is a real mistake, and every question has a reason for being in the check.
+
+Each attempt picks one version per slot and **never repeats the version the learner saw last time**. This is remembered on their phone, so it works even weeks later. R1 and R2 share a reading text, so they're always picked together. Answer options are also shuffled on every attempt.
+
+| Slot | Topic | Version a | Version b | Version c |
+|---|---|---|---|---|
+| V1 | Numbers & prices | 3,50 € at a bakery | "siebzehn Euro achtzig" at a supermarket | "vierundzwanzig" at a ticket machine (4-and-20) |
+| V2 | Telling the time | Viertel nach acht (meeting) | halb zehn (doctor), the "half ten" trap | Viertel vor sieben (cinema) |
+| V3 | Days & dates | Rent due "bis Mittwoch" | Class "am Donnerstag" | Flat free "ab dem ersten Juni" (Juni/Juli) |
+| V4 | Family & people | Visa interview: father's mother | Visa form: "Ehemann" | Host's sister's son (Neffe) |
+| V5 | Shops, places & signs | Headache: Apotheke vs Drogerie | Door sign "Ziehen" | Bottle label "Gift" (false friend) |
+| G1 | Verb endings | Wir wohnen | Sie (she) lernt vs sie (they) lernen | Woher kommt ihr? |
+| G2 | sein & haben | Du bist | Ich habe Kopfschmerzen | Meine Eltern sind |
+| G3 | Accusative | einen Bruder | einen Kaffee | den Zug |
+| G4 | Word order | Am Samstag gehe ich… | Heute habe ich… | Wo ist der Bahnhof? |
+| G5 | Separable verbs | stehe … auf | kaufe … ein | rufe … an |
+| R1–R2 | Messages, details | Tom can't come Saturday | Teacher: class moved to another room | Host mother at the supermarket |
+| R3 | Signs & opening hours | Doctor's hours | Bakery on Sunday | Foreigners' office hours |
+| R4 | Short ads | Room for rent | Babysitter job | Bike for sale |
+| R5 | nicht … sondern | Train platform change | Bus route shortened | Exam moved to Tuesday |
 
 ## Code structure (no framework, no build step)
 ```
 index.html            page shell
 style.css             mobile-first styles (German-signage look)
 fonts/                Barlow, self-hosted (SIL Open Font License)
-questions.js          ALL content: questions, reasons, mistakes, topics, drills
+questions.js          ALL content: 45-question bank, reasons, mistakes, topics, drills
+picker.js             picks one version per slot for each attempt, avoiding the last one
 scoring.js            ALL logic: scoreCheck() + RULES
 app.js                the three screens: start → questions → results
 tests/scoring.test.js run with: node tests/scoring.test.js
 ```
-- **Change a question:** edit `questions.js`.
+- **Change or add a question:** edit `questions.js` (give it a slot, a version letter and a set).
 - **Change what "ready" means:** edit `RULES` in `scoring.js`.
 - **Change a screen:** edit `app.js`.
 
@@ -75,5 +81,5 @@ Open `index.html` in a browser. That's it. Tests: `node tests/scoring.test.js`.
 ## What I'd build next (V2)
 - Validate the score: compare check results with learners' real exam results.
 - Listening questions with short audio clips (most exam points come from Hören, Schreiben and Sprechen).
-- A larger question bank, so retakes aren't memorised.
+- Check that the three versions of each slot are equally hard (compare answer rates per version) and replace any that aren't.
 - Ask Globio's ex-Goethe examiners which mistakes they see most, to weight topics with evidence instead of my estimates.

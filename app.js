@@ -3,7 +3,27 @@
  * Author: Astha Purohit
  */
 
-const state = { index: 0, answers: {}, pendingChoice: null };
+const state = { index: 0, answers: {}, pendingChoice: null, picks: null };
+let QUESTIONS = [];   // this attempt's 15 questions, picked from QUESTION_BANK
+
+/* Remember which versions the learner saw, so a retake (even weeks later on the
+   same phone) gets different questions. Storage can be blocked, so fail quietly. */
+const LAST_KEY = "examReady.lastPicks";
+function loadLastPicks() {
+  try { return JSON.parse(localStorage.getItem(LAST_KEY)) || {}; } catch (e) { return {}; }
+}
+function saveLastPicks(picks) {
+  try { localStorage.setItem(LAST_KEY, JSON.stringify(picks)); } catch (e) { /* ignore */ }
+}
+
+function startAttempt() {
+  const { questions, picks } = pickQuestions(QUESTION_BANK, state.picks || loadLastPicks());
+  QUESTIONS = questions;
+  state.picks = picks;
+  state.index = 0;
+  state.answers = {};
+  shuffleOptions();
+}
 const app = document.getElementById("app");
 const KEYS = ["A", "B", "C", "D"];
 
@@ -23,7 +43,7 @@ const STATUS_COPY = {
 };
 
 /* In questions.js the right answer is listed first, so shuffle the options
-   every time someone starts the check. Scoring reads o.correct, not the position. */
+   on every attempt. Scoring reads o.correct, not the position. */
 function shuffleOptions() {
   for (const q of QUESTIONS) {
     for (let i = q.options.length - 1; i > 0; i--) {
@@ -57,13 +77,13 @@ function renderStart() {
     <button class="btn btn-go" id="start">Start the check</button>
     <p class="fine">This check covers vocabulary, grammar and reading. It doesn't test listening or speaking yet.</p>
   `;
-  document.getElementById("start").onclick = () => { state.index = 0; state.answers = {}; shuffleOptions(); renderQuestion(); };
+  document.getElementById("start").onclick = () => { startAttempt(); renderQuestion(); };
 }
 
 /* ---------- reading texts, drawn like the real thing ---------- */
 function renderPassage(p) {
   if (p.kind === "chat") {
-    const body = p.text.replace(/\s*Liebe Grüße, Tom$/, "<br>Liebe Grüße, Tom");
+    const body = p.text.replace(/\s*((Liebe|Viele) Grüße|Bis später),\s*(\S+)$/, "<br>$1, $3");
     return `<div class="chat"><div class="bubble"><div class="who">${p.from}</div><p>${body}</p><div class="stamp">${p.time}</div></div></div>`;
   }
   if (p.kind === "sign") {
@@ -161,6 +181,8 @@ function meterColor(score) {
 
 function renderResults() {
   const r = scoreCheck(QUESTIONS, state.answers, SKILLS, TOPICS);
+  saveLastPicks(state.picks);
+  const num = id => QUESTIONS.findIndex(q => q.id === id) + 1;
   const copy = VERDICT_COPY[r.verdict];
   const weakList = r.weakSkills.map(s => SKILLS[s].label).join(" and ");
   const weakNote = r.verdict !== "READY" && r.weakSkills.length
@@ -188,7 +210,7 @@ function renderResults() {
         return `
           <li>
             <h3>${t.label}${rec.misconception ? '<span class="tag-misc">Misconception</span>' : ""}</h3>
-            <div class="reason">${STATUS_COPY[status]} Question ${rec.questions.join(", ")}.</div>
+            <div class="reason">${STATUS_COPY[status]} Question ${rec.questions.map(num).join(", ")}.</div>
             <div class="drill"><strong>10-minute drill:</strong> ${t.drill}</div>
           </li>`;
       }).join("")}</ol>`
@@ -204,7 +226,7 @@ function renderResults() {
                : '<span class="bad">Wrong</span>';
     return `
       <div class="review-item">
-        <div class="ri-head">${q.id}: ${q.prompt} ${mark}</div>
+        <div class="ri-head">${num(q.id)}. ${q.prompt} ${mark}</div>
         ${rv.correct ? "" : `<div>You chose <em>${rv.chosen ? rv.chosen.text : "nothing"}</em>. ${rv.chosen && rv.chosen.mistake ? rv.chosen.mistake : ""}</div>`}
         <div>Answer: <strong>${right.text.replace(/\.$/, "")}</strong>. ${q.explain}</div>
         <div class="ri-why">Why this question: ${q.why}</div>
@@ -252,7 +274,7 @@ function renderResults() {
     <button class="btn btn-plate" id="retake">Retake the check</button>
   `;
   document.getElementById("retake").onclick = () => {
-    state.answers = {}; state.index = 0; renderStart(); window.scrollTo(0, 0);
+    renderStart(); window.scrollTo(0, 0);
   };
 }
 
