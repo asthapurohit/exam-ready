@@ -186,7 +186,7 @@ function renderResults() {
   const copy = VERDICT_COPY[r.verdict];
   const weakList = r.weakSkills.map(s => SKILLS[s].label).join(" and ");
   const weakNote = r.verdict !== "READY" && r.weakSkills.length
-    ? `<p class="weak">${r.overall >= RULES.readyOverall ? "Your overall score is strong, but " : ""}${weakList} ${r.weakSkills.length > 1 ? "are" : "is"} below 60%. One weak section is a real risk on exam day.</p>`
+    ? `<p class="weak">${r.overall >= RULES.readyOverall ? "Your overall score is strong, but " : ""}${weakList} ${r.weakSkills.length > 1 ? "are" : "is"} below ${RULES.readySkillMin}%. One weak section is a real risk on exam day.</p>`
     : "";
 
   const skillsHtml = Object.keys(SKILLS).map(s => {
@@ -248,7 +248,7 @@ function renderResults() {
         <div class="overall"><b>${r.overall}%</b><span>overall</span></div>
         <div class="skills">${skillsHtml}</div>
       </div>
-      <div class="pass-foot">The exam pass mark is 60%. You're "ready" at 75% or more, with no skill under 60% (the two lines on each bar).</div>
+      <div class="pass-foot">The exam pass mark is 60%. You're "ready" at ${RULES.readyOverall}% or more, with no skill under ${RULES.readySkillMin}% (the two lines on each bar).</div>
     </article>
 
     <h2 class="section-title">${r.recommendations.length ? "Practise these before you book" : "What to do next"}</h2>
@@ -259,10 +259,10 @@ function renderResults() {
     <details>
       <summary>How is "ready" calculated?</summary>
       <ul>
-        <li>Right and sure = 1 point. Right but guessing = 0.7, because a lucky guess isn't real knowledge. Wrong = 0.</li>
+        <li>Right and sure = 1 point. Right but guessing = ${RULES.points.rightGuess}, because a lucky guess isn't real knowledge. Wrong = 0.</li>
         <li>Each skill is scored out of 100%. Overall is the average of the three skills.</li>
-        <li><strong>Ready</strong> = overall 75%+ and every skill 60%+. The real pass mark is 60%, but this is a short check and exam day adds nerves, so there's a safety margin.</li>
-        <li><strong>Almost there</strong> = overall 60%+. <strong>Not yet</strong> = under 60%.</li>
+        <li><strong>Ready</strong> = overall ${RULES.readyOverall}%+ and every skill ${RULES.readySkillMin}%+. The real pass mark is 60%, but this is a short check and exam day adds nerves, so there's a safety margin.</li>
+        <li><strong>Almost there</strong> = overall ${RULES.almostOverall}%+. <strong>Not yet</strong> = under ${RULES.almostOverall}%.</li>
         <li>Practice topics are ranked with confident mistakes first, then wrong guesses, then lucky guesses, weighted by how often the topic appears in the exam.</li>
       </ul>
     </details>
